@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   macos-app:
     name: macOS app
@@ -33,12 +36,15 @@ jobs:
           cp -R "dist/Voice Reader.app" "release/VoiceReader-macOS/"
           cp README.md PRIVACY.md LICENSE "release/VoiceReader-macOS/"
           ditto -c -k --sequesterRsrc --keepParent "release/VoiceReader-macOS" "VoiceReader-macOS.zip"
+          hdiutil create -volname "Voice Reader" -srcfolder "release/VoiceReader-macOS" -ov -format UDZO "VoiceReader-macOS.dmg"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: VoiceReader-macOS
-          path: VoiceReader-macOS.zip
+          path: |
+            VoiceReader-macOS.zip
+            VoiceReader-macOS.dmg
 
   windows-app:
     name: Windows app
@@ -60,6 +66,10 @@ jobs:
         shell: pwsh
         run: Copy-Item README.md,PRIVACY.md,LICENSE,windows/README.md -Destination publish/windows
 
+      - name: Copy standalone exe
+        shell: pwsh
+        run: Copy-Item publish/windows/VoiceReader.Windows.exe -Destination VoiceReader-Windows.exe
+
       - name: Package Windows app
         shell: pwsh
         run: Compress-Archive -Path publish/windows/* -DestinationPath VoiceReader-Windows.zip
@@ -68,4 +78,45 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: VoiceReader-Windows
-          path: VoiceReader-Windows.zip
+          path: |
+            VoiceReader-Windows.zip
+            VoiceReader-Windows.exe
+
+  github-release:
+    name: GitHub release
+    runs-on: ubuntu-latest
+    needs: [macos-app, windows-app]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: VoiceReader-macOS
+          path: release-assets
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: VoiceReader-Windows
+          path: release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Voice Reader ${{ github.ref_name }}
+          body: |
+            Готовые сборки Voice Reader.
+
+            macOS:
+            - VoiceReader-macOS.zip
+            - VoiceReader-macOS.dmg
+
+            Windows:
+            - VoiceReader-Windows.zip
+            - VoiceReader-Windows.exe
+          files: |
+            release-assets/VoiceReader-macOS.zip
+            release-assets/VoiceReader-macOS.dmg
+            release-assets/VoiceReader-Windows.zip
+            release-assets/VoiceReader-Windows.exe
