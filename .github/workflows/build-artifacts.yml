@@ -37,6 +37,12 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller==6.17.0 Pillow==12.0.0
 
+      - name: Require Apple signing for public tag releases
+        if: startsWith(github.ref, 'refs/tags/') && env.HAS_APPLE_SIGNING != 'true'
+        run: |
+          echo "::error::macOS public releases require Apple Developer ID signing and notarization. Add the Apple signing secrets documented in docs/MACOS_SIGNING.md, then create a new tag."
+          exit 1
+
       - name: Build app
         run: scripts/build_macos_app.sh
 
@@ -44,7 +50,7 @@ jobs:
         if: env.HAS_APPLE_SIGNING != 'true'
         run: |
           scripts/package_macos_release.sh
-          echo "APPLE SIGNING IS NOT CONFIGURED. This build will show a macOS Gatekeeper warning."
+          echo "::warning::APPLE SIGNING IS NOT CONFIGURED. This build will show a macOS Gatekeeper warning."
 
       - name: Sign and notarize app
         if: env.HAS_APPLE_SIGNING == 'true'
@@ -121,8 +127,8 @@ jobs:
             Готовые сборки Voice Reader.
 
             macOS:
-            - VoiceReader-macOS.zip - app bundle archive
-            - VoiceReader-macOS.dmg - drag Voice Reader.app into Applications
+            - VoiceReader-macOS.dmg - open the DMG and drag Voice Reader.app into Applications
+            - VoiceReader-macOS.zip - app bundle archive with README, LICENSE, and PRIVACY
 
             Windows:
             - VoiceReader-Windows.zip

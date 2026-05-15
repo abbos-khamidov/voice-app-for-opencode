@@ -5,6 +5,7 @@
 - Improved macOS packaging: DMG now opens with `Voice Reader.app` at the root and an `Applications` shortcut for drag-and-drop installation.
 - Added macOS app icon generation for the `.app` bundle.
 - Added optional Apple Developer ID signing and notarization support in GitHub Actions.
+- Kept DMG contents focused on install only: app bundle plus `Applications` shortcut.
 - Added professional Russian project documentation.
 - Added generated README visuals and logo assets.
 - Added privacy notice for online TTS processing.

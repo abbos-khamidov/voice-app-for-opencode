@@ -45,3 +45,6 @@ If the secrets are not configured, the workflow still builds:
 
 Those builds are useful for testing, but macOS can show a Gatekeeper warning because they are not notarized.
 
+The warning usually says Apple could not verify that the app is free of malware. That warning is expected for unsigned or non-notarized downloads and cannot be removed by changing the DMG layout.
+
+For public tag releases (`v*`), the workflow intentionally fails when Apple signing secrets are missing. This prevents publishing a macOS DMG that looks ready for users but is blocked by Gatekeeper.
