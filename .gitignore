@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+speech.mp3
+speech.tmp.mp3
+tts_chunks/
