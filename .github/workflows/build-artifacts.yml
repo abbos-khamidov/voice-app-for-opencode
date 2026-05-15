@@ -1,0 +1,71 @@
+name: Build Downloadable Apps
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  macos-app:
+    name: macOS app
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller==6.17.0
+
+      - name: Build app
+        run: |
+          pyinstaller -y --windowed --name "Voice Reader" --add-data "assets/logo.png:assets" main.py
+          mkdir -p "release/VoiceReader-macOS"
+          cp -R "dist/Voice Reader.app" "release/VoiceReader-macOS/"
+          cp README.md PRIVACY.md LICENSE "release/VoiceReader-macOS/"
+          ditto -c -k --sequesterRsrc --keepParent "release/VoiceReader-macOS" "VoiceReader-macOS.zip"
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceReader-macOS
+          path: VoiceReader-macOS.zip
+
+  windows-app:
+    name: Windows app
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish Windows app
+        run: dotnet publish windows/VoiceReader.Windows/VoiceReader.Windows.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -o publish/windows
+
+      - name: Add release documents
+        shell: pwsh
+        run: Copy-Item README.md,PRIVACY.md,LICENSE,windows/README.md -Destination publish/windows
+
+      - name: Package Windows app
+        shell: pwsh
+        run: Compress-Archive -Path publish/windows/* -DestinationPath VoiceReader-Windows.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceReader-Windows
+          path: VoiceReader-Windows.zip

@@ -46,6 +46,7 @@ public sealed class MainForm : Form
     private readonly Button playButton = new();
     private readonly Button stopButton = new();
     private readonly Label statusLabel = new();
+    private readonly Label footerLabel = new();
     private readonly System.Windows.Forms.Timer playbackTimer = new();
     private readonly Queue<string> playbackQueue = new();
 
@@ -61,7 +62,7 @@ public sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "Text Reader";
+        Text = "Voice Reader";
         Width = 900;
         Height = 620;
         MinimumSize = new System.Drawing.Size(760, 420);
@@ -106,6 +107,12 @@ public sealed class MainForm : Form
         statusLabel.AutoSize = true;
         statusLabel.Padding = new Padding(6, 8, 0, 0);
 
+        footerLabel.Text = "made by adams midov";
+        footerLabel.Dock = DockStyle.Bottom;
+        footerLabel.Height = 28;
+        footerLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+        footerLabel.ForeColor = System.Drawing.Color.DimGray;
+
         var controls = new FlowLayoutPanel
         {
             Dock = DockStyle.Bottom,
@@ -123,7 +130,8 @@ public sealed class MainForm : Form
         controls.Controls.Add(playButton);
         controls.Controls.Add(stopButton);
 
-        var bottom = new Panel { Dock = DockStyle.Bottom, Height = 82 };
+        var bottom = new Panel { Dock = DockStyle.Bottom, Height = 112 };
+        bottom.Controls.Add(footerLabel);
         bottom.Controls.Add(statusLabel);
         bottom.Controls.Add(controls);
 

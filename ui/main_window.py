@@ -1,6 +1,8 @@
+import sys
 from pathlib import Path
 
-from PyQt6.QtCore import QThread, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QComboBox,
     QDoubleSpinBox,
@@ -118,8 +120,12 @@ class MainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Text Reader")
+        self.setWindowTitle("Voice Reader")
         self.resize(820, 560)
+
+        app_icon = self.resource_path("assets/logo.png")
+        if app_icon.exists():
+            self.setWindowIcon(QIcon(str(app_icon)))
 
         self.audio_service = AudioService()
         self.worker: TTSWorker | None = None
@@ -154,6 +160,9 @@ class MainWindow(QMainWindow):
         self.play_button = QPushButton("Play")
         self.stop_button = QPushButton("Stop")
         self.status_label = QLabel("Ready")
+        self.footer_label = QLabel("made by adams midov")
+        self.footer_label.setStyleSheet("color: #6b7280; padding-top: 6px;")
+        self.footer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.play_button.clicked.connect(self.play)
         self.stop_button.clicked.connect(self.stop)
@@ -173,6 +182,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.text_area)
         layout.addLayout(controls)
         layout.addWidget(self.status_label)
+        layout.addWidget(self.footer_label)
 
         root = QWidget()
         root.setLayout(layout)
@@ -345,3 +355,10 @@ class MainWindow(QMainWindow):
         percent = round((speed - 1.0) * 100)
         sign = "+" if percent >= 0 else ""
         return f"{sign}{percent}%"
+
+    def resource_path(self, relative_path: str) -> Path:
+        bundle_root = getattr(sys, "_MEIPASS", None)
+        if bundle_root:
+            return Path(bundle_root) / relative_path
+
+        return Path(__file__).resolve().parents[1] / relative_path
