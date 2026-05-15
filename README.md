@@ -31,6 +31,27 @@ python main.py
 
 The app requires an internet connection when pressing Play because Edge TTS generates speech online.
 
+## Windows Version
+
+A C# WinForms version is available in `windows/VoiceReader.Windows`.
+
+```powershell
+cd windows\VoiceReader.Windows
+dotnet run
+```
+
+See `windows/README.md` for Windows prerequisites.
+
+## Docker
+
+Docker support is available for containerized MP3 generation through a CLI, not for the desktop GUI.
+
+```bash
+docker build -f docker/Dockerfile -t text-reader-tts .
+```
+
+See `docker/README.md` for usage.
+
 ## Usage
 
 1. Paste text into the text area.

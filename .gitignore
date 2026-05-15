@@ -4,3 +4,5 @@ __pycache__/
 speech.mp3
 speech.tmp.mp3
 tts_chunks/
+bin/
+obj/
