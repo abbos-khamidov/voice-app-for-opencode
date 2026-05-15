@@ -37,6 +37,10 @@ Voice Reader - это MVP-приложение для генерации и во
 
 [Скачать macOS DMG](https://github.com/abbos-khamidov/voice-app-for-opencode/releases/latest/download/VoiceReader-macOS.dmg)
 
+В DMG приложение лежит как `Voice Reader.app` рядом с ярлыком `Applications`. Откройте DMG и перетащите `Voice Reader.app` в `Applications`.
+
+Важно: если сборка не подписана Apple Developer ID и не прошла notarization, macOS может показать предупреждение Gatekeeper о неизвестном разработчике. Это не обходится настройкой DMG. Правильное решение - подписать и notarize сборку через Apple Developer account. Workflow уже подготовлен под это через GitHub Secrets, подробнее: [docs/MACOS_SIGNING.md](docs/MACOS_SIGNING.md).
+
 ### Windows
 
 Сначала можно скачать полный архив:

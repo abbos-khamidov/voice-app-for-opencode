@@ -13,6 +13,14 @@ jobs:
   macos-app:
     name: macOS app
     runs-on: macos-latest
+    env:
+      HAS_APPLE_SIGNING: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 != '' && secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' && secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' }}
+      KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD || 'temporary-ci-keychain-password' }}
+      APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_BASE64 }}
+      APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -27,16 +35,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller==6.17.0
+          pip install pyinstaller==6.17.0 Pillow==12.0.0
 
       - name: Build app
+        run: scripts/build_macos_app.sh
+
+      - name: Package unsigned app
+        if: env.HAS_APPLE_SIGNING != 'true'
         run: |
-          pyinstaller -y --windowed --name "Voice Reader" --add-data "assets/logo.png:assets" main.py
-          mkdir -p "release/VoiceReader-macOS"
-          cp -R "dist/Voice Reader.app" "release/VoiceReader-macOS/"
-          cp README.md PRIVACY.md LICENSE "release/VoiceReader-macOS/"
-          ditto -c -k --sequesterRsrc --keepParent "release/VoiceReader-macOS" "VoiceReader-macOS.zip"
-          hdiutil create -volname "Voice Reader" -srcfolder "release/VoiceReader-macOS" -ov -format UDZO "VoiceReader-macOS.dmg"
+          scripts/package_macos_release.sh
+          echo "APPLE SIGNING IS NOT CONFIGURED. This build will show a macOS Gatekeeper warning."
+
+      - name: Sign and notarize app
+        if: env.HAS_APPLE_SIGNING == 'true'
+        run: scripts/notarize_macos_release.sh
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
@@ -109,8 +121,8 @@ jobs:
             Готовые сборки Voice Reader.
 
             macOS:
-            - VoiceReader-macOS.zip
-            - VoiceReader-macOS.dmg
+            - VoiceReader-macOS.zip - app bundle archive
+            - VoiceReader-macOS.dmg - drag Voice Reader.app into Applications
 
             Windows:
             - VoiceReader-Windows.zip

@@ -9,5 +9,8 @@ bin/
 obj/
 build/
 dist/
+release/
 *.spec
+*.dmg
+VoiceReader-*.zip
 .pyinstaller-cache/
